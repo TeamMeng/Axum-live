@@ -1,0 +1,27 @@
+### index handler
+GET http://localhost:8080
+
+### list todos handler
+GET http://localhost:8080/todos
+
+# @name login
+### login handler
+POST http://localhost:8080/login
+Content-Type: application/json
+
+{
+    "email": "Meng@123.com",
+    "password": "hunter42"
+}
+
+@token = {{login.response.body.token}}
+
+
+### create todo handler
+POST http://localhost:8080/todos
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "title": "Todo 3"
+}

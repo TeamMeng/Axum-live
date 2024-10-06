@@ -1,0 +1,17 @@
+[package]
+name = "axum-live"
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+anyhow = "1.0.89"
+axum = { version = "0.7.7", features = ["http2", "query", "tracing", "multipart"] }
+axum-extra = { version = "0.9.4", features = ["typed-header"] }
+jsonwebtoken = "9.3.0"
+serde = { version = "1.0.210", features = ["derive"] }
+tokio = { version = "1.40.0", features = ["rt", "rt-multi-thread", "macros"] }
+tracing = "0.1.40"
+tracing-subscriber = { version = "0.3.18", features = ["env-filter"] }
