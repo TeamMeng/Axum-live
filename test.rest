@@ -4,7 +4,6 @@ GET http://localhost:8080
 ### list todos handler
 GET http://localhost:8080/todos
 
-# @name login
 ### login handler
 POST http://localhost:8080/login
 Content-Type: application/json
@@ -14,13 +13,11 @@ Content-Type: application/json
     "password": "hunter42"
 }
 
-@token = {{login.response.body.token}}
-
 
 ### create todo handler
 POST http://localhost:8080/todos
 Content-Type: application/json
-Authorization: Bearer {{token}}
+Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6MSwibmFtZSI6IlRlYW0gTWVuZyIsImV4cCI6MTcyOTQ4NjYxNH0.YibD09lLtHYiKaFeXmmaxhQP2J3YnyzKvP2R46N6kOo
 
 {
     "title": "Todo 3"

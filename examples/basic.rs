@@ -2,11 +2,18 @@ use std::time::SystemTime;
 
 use anyhow::Result;
 use axum::{
-    http::StatusCode,
+    async_trait, debug_handler,
+    extract::FromRequestParts,
+    http::{request::Parts, StatusCode},
+    response::IntoResponse,
     routing::{get, post},
     Json, Router,
 };
-use jsonwebtoken::{encode, EncodingKey, Header};
+use axum_extra::{
+    headers::{authorization::Bearer, Authorization},
+    TypedHeader,
+};
+use jsonwebtoken::{decode, encode, DecodingKey, EncodingKey, Header, Validation};
 use serde::{Deserialize, Serialize};
 use tokio::net::TcpListener;
 use tracing::{info, level_filters::LevelFilter};
@@ -91,11 +98,34 @@ async fn todos_handler() -> Json<Vec<Todo>> {
     ])
 }
 
-async fn create_todo_handler(Json(_todo): Json<CreateTodo>) -> StatusCode {
+#[async_trait]
+impl<S> FromRequestParts<S> for Claims
+where
+    S: Send + Sync,
+{
+    type Rejection = HttpError;
+
+    async fn from_request_parts(parts: &mut Parts, state: &S) -> Result<Self, Self::Rejection> {
+        let TypedHeader(Authorization(bearer)) =
+            TypedHeader::<Authorization<Bearer>>::from_request_parts(parts, state)
+                .await
+                .map_err(|_| HttpError::Auth)?;
+
+        let key = DecodingKey::from_secret(SECRET);
+        let token =
+            decode(bearer.token(), &key, &Validation::default()).map_err(|_| HttpError::Auth)?;
+
+        Ok(token.claims)
+    }
+}
+
+#[debug_handler]
+async fn create_todo_handler(claims: Claims, Json(_todo): Json<CreateTodo>) -> StatusCode {
+    println!("{:?}", claims);
     StatusCode::CREATED
 }
 
-// eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6MSwibmFtZSI6IlRlYW0gTWVuZyIsImV4cCI6MTcyOTQyOTk5OH0.0z2jxPxphwN6rV3ro42wbvcF9fS32bEy6PJJ-BQWhHo
+// token eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6MSwibmFtZSI6IlRlYW0gTWVuZyIsImV4cCI6MTcyOTQ4NjYxNH0.YibD09lLtHYiKaFeXmmaxhQP2J3YnyzKvP2R46N6kOo
 async fn login_handler(Json(_login): Json<LoginRequest>) -> Json<LoginResponse> {
     // skip login info validation
     let claims = Claims {
@@ -115,19 +145,19 @@ fn get_epoch() -> usize {
         .as_secs() as usize
 }
 
-// #[derive(Debug, Serialize, Deserialize)]
-// enum HttpError {
-//     Auth,
-//     Internal,
-// }
+#[derive(Debug, Serialize, Deserialize)]
+enum HttpError {
+    Auth,
+    Internal,
+}
 
-// impl IntoResponse for HttpError {
-//     fn into_response(self) -> axum::response::Response {
-//         match self {
-//             HttpError::Auth => (StatusCode::UNAUTHORIZED, "Unauthorized").into_response(),
-//             HttpError::Internal => {
-//                 (StatusCode::INTERNAL_SERVER_ERROR, "Internal Server Error").into_response()
-//             }
-//         }
-//     }
-// }
+impl IntoResponse for HttpError {
+    fn into_response(self) -> axum::response::Response {
+        match self {
+            HttpError::Auth => (StatusCode::UNAUTHORIZED, "Unauthorized").into_response(),
+            HttpError::Internal => {
+                (StatusCode::INTERNAL_SERVER_ERROR, "Internal Server Error").into_response()
+            }
+        }
+    }
+}
