@@ -1,9 +1,15 @@
-use std::time::SystemTime;
+use std::{
+    sync::{
+        atomic::{AtomicUsize, Ordering},
+        Arc, RwLock,
+    },
+    time::SystemTime,
+};
 
 use anyhow::Result;
 use axum::{
     async_trait, debug_handler,
-    extract::FromRequestParts,
+    extract::{FromRequestParts, State},
     http::{request::Parts, StatusCode},
     response::IntoResponse,
     routing::{get, post},
@@ -26,9 +32,10 @@ use tracing_subscriber::{
 
 const SECRET: &[u8] = b"deabeef";
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, Clone)]
 struct Todo {
     id: usize,
+    user_id: usize,
     title: String,
     completed: bool,
 }
@@ -57,8 +64,17 @@ struct Claims {
     exp: usize,
 }
 
+#[derive(Debug, Default, Clone)]
+struct TodoStore {
+    items: Arc<RwLock<Vec<Todo>>>,
+}
+
+static NEXT_ID: AtomicUsize = AtomicUsize::new(1);
+
 #[tokio::main]
 async fn main() -> Result<()> {
+    let store = TodoStore::default();
+
     let layer = Layer::new()
         .with_span_events(FmtSpan::NEW | FmtSpan::CLOSE)
         .pretty()
@@ -68,7 +84,8 @@ async fn main() -> Result<()> {
     let app = Router::new()
         .route("/", get(index_handler))
         .route("/todos", get(todos_handler).post(create_todo_handler))
-        .route("/login", post(login_handler));
+        .route("/login", post(login_handler))
+        .with_state(store);
 
     let addr = "127.0.0.1:8080";
     info!("Server listenging on {}", addr);
@@ -83,19 +100,21 @@ async fn index_handler() -> &'static str {
     "Hello World"
 }
 
-async fn todos_handler() -> Json<Vec<Todo>> {
-    Json(vec![
-        Todo {
-            id: 1,
-            title: "Todo 1".to_string(),
-            completed: false,
-        },
-        Todo {
-            id: 2,
-            title: "Todo 2".to_string(),
-            completed: true,
-        },
-    ])
+async fn todos_handler(
+    claims: Claims,
+    State(store): State<TodoStore>,
+) -> Result<Json<Vec<Todo>>, HttpError> {
+    let user_id = claims.id;
+    match store.items.read() {
+        Ok(items) => Ok(Json(
+            items
+                .iter()
+                .filter(|todo| todo.user_id == user_id)
+                .cloned()
+                .collect(),
+        )),
+        Err(_) => Err(HttpError::Internal),
+    }
 }
 
 #[async_trait]
@@ -120,9 +139,24 @@ where
 }
 
 #[debug_handler]
-async fn create_todo_handler(claims: Claims, Json(_todo): Json<CreateTodo>) -> StatusCode {
-    println!("{:?}", claims);
-    StatusCode::CREATED
+async fn create_todo_handler(
+    claims: Claims,
+    State(store): State<TodoStore>,
+    Json(todo): Json<CreateTodo>,
+) -> Result<StatusCode, HttpError> {
+    match store.items.write() {
+        Ok(mut guard) => {
+            let todo = Todo {
+                id: get_next_id(),
+                user_id: claims.id,
+                title: todo.title,
+                completed: false,
+            };
+            guard.push(todo);
+            Ok(StatusCode::CREATED)
+        }
+        Err(_) => Err(HttpError::Internal),
+    }
 }
 
 // token eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6MSwibmFtZSI6IlRlYW0gTWVuZyIsImV4cCI6MTcyOTQ4NjYxNH0.YibD09lLtHYiKaFeXmmaxhQP2J3YnyzKvP2R46N6kOo
@@ -160,4 +194,8 @@ impl IntoResponse for HttpError {
             }
         }
     }
+}
+
+fn get_next_id() -> usize {
+    NEXT_ID.fetch_add(1, Ordering::Relaxed)
 }

@@ -1,9 +1,6 @@
 ### index handler
 GET http://localhost:8080
 
-### list todos handler
-GET http://localhost:8080/todos
-
 ### login handler
 POST http://localhost:8080/login
 Content-Type: application/json
@@ -17,8 +14,23 @@ Content-Type: application/json
 ### create todo handler
 POST http://localhost:8080/todos
 Content-Type: application/json
-Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6MSwibmFtZSI6IlRlYW0gTWVuZyIsImV4cCI6MTcyOTQ4NjYxNH0.YibD09lLtHYiKaFeXmmaxhQP2J3YnyzKvP2R46N6kOo
+Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6MSwibmFtZSI6IlRlYW0gTWVuZyIsImV4cCI6MTcyOTQ5NDg2Mn0.ghJFgbSjQpKXrXM7a0xNW6JtXTKr0T4jq3t_LX6_He4
 
 {
-    "title": "Todo 3"
+    "title": "Todo 1"
 }
+
+### create todo handler
+POST http://localhost:8080/todos
+Content-Type: application/json
+Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6MSwibmFtZSI6IlRlYW0gTWVuZyIsImV4cCI6MTcyOTQ5NDg2Mn0.ghJFgbSjQpKXrXM7a0xNW6JtXTKr0T4jq3t_LX6_He4
+
+
+{
+    "title": "Todo 2"
+}
+
+### list todos handler
+GET http://localhost:8080/todos
+Content-Type: application/json
+Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6MSwibmFtZSI6IlRlYW0gTWVuZyIsImV4cCI6MTcyOTQ5NDg2Mn0.ghJFgbSjQpKXrXM7a0xNW6JtXTKr0T4jq3t_LX6_He4
