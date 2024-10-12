@@ -50,3 +50,7 @@ Content-Type: application/json
 GET http://localhost:8080/logup
 Content-Type: application/json
 Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJNZW5nQDEyMy5jb20iLCJleHAiOjI0ODkzMzU2NTA3MjB9.uOmsJSJRH14-RYtTE4H0T1tTbUASN4xDR8djY3Kl9ZM
+
+### index handler
+GET http://localhost:8080
+Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJNZW5nQDEyMy5jb20iLCJleHAiOjI0ODkzMzU2NTA3MjB9.uOmsJSJRH14-RYtTE4H0T1tTbUASN4xDR8djY3Kl9ZM
