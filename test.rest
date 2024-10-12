@@ -34,3 +34,19 @@ Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6MSwibmFtZSI6I
 GET http://localhost:8080/todos
 Content-Type: application/json
 Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6MSwibmFtZSI6IlRlYW0gTWVuZyIsImV4cCI6MTcyOTQ5NDg2Mn0.ghJFgbSjQpKXrXM7a0xNW6JtXTKr0T4jq3t_LX6_He4
+
+
+### jwt login handler
+POST http://localhost:8080/login
+Content-Type: application/json
+
+{
+    "username": "Meng@123.com",
+    "password": "hunter42"
+}
+
+
+### list todos handler
+GET http://localhost:8080/logup
+Content-Type: application/json
+Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJNZW5nQDEyMy5jb20iLCJleHAiOjI0ODkzMzU2NTA3MjB9.uOmsJSJRH14-RYtTE4H0T1tTbUASN4xDR8djY3Kl9ZM
