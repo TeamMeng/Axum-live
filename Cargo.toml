@@ -18,8 +18,23 @@ axum = { version = "0.7.7", features = [
 ] }
 axum-extra = { version = "0.9.4", features = ["typed-header"] }
 chrono = { version = "0.4.38", features = ["serde"] }
+futures = "0.3.31"
 jsonwebtoken = "9.3.0"
+reqwest = { version = "0.12.8", default-features = false, features = [
+    "rustls-tls",
+    "json",
+    "stream",
+] }
 serde = { version = "1.0.210", features = ["derive"] }
 tokio = { version = "1.40.0", features = ["rt", "rt-multi-thread", "macros"] }
+tokio-stream = { version = "0.1.16", features = ["sync", "net"] }
 tracing = "0.1.40"
 tracing-subscriber = { version = "0.3.18", features = ["env-filter"] }
+
+[[bin]]
+name = "server"
+path = "src/server.rs"
+
+[[bin]]
+name = "client"
+path = "src/client.rs"
